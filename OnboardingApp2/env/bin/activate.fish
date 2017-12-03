@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/luce/Documents/SlackBots/onboarding-app/env"
+set -gx VIRTUAL_ENV "/Users/luce/Documents/SlackBotz/OnboardingApp2/env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
