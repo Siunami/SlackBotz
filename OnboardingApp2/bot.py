@@ -102,9 +102,25 @@ class Bot(object):
         print("Make profile card")
         print(userid)
 
-    def getHelp(self, userid, text):
-        print("Get help")
+    def getHelp(self, userid, text, username):
 
+        print("Get help")
+        if not not self.airtable.match('user-id', str(userid)):
+            found_user= self.airtable.match('user-id', str(userid))
+            fields = {'AboutMe': str(textresponse)}
+            self.airtable.update(found_user['id'], fields)
+        else:
+            new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
+            self.airtable.insert(new_user)
+        # post_message = self.client.api_call(
+        #                               "chat.postMessage",
+        #                               channel="#intros",
+        #                               text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
+        #                               # attachments=text, #messageObj.create_attachments2(text),
+        #                               username = "Welcome Bot"
+        #                               # user=userid,
+        #                               # as_user=True
+        #                             )
 
     def addSkill(self, userid,textresponse):
         skills = textresponse.split()
@@ -117,29 +133,22 @@ class Bot(object):
             mySkills = mySkills + skill + "\n"
             print(skill)
 
-        if not not self.airtable.match('user-id', str(userid)):
-            found_user= self.airtable.get('user-id', str(userid))
-            print(found_user)
-            # fields = {'Skills': }
-            # self.airtable.update(found_user['id'], fields)
-        else:
-            new_user = {'user-id': str(userid), 'Name': username, 'Skills': textresponse}
-            self.airtable.insert(new_user)
-            post_message = self.client.api_call(
-                                          "chat.postMessage",
-                                          channel="#intros",
-                                          text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
-                                          # attachments=text, #messageObj.create_attachments2(text),
-                                          username = "Welcome Bot"
-                                          # user=userid,
-                                          # as_user=True
-                                        )
+        # if not not self.airtable.match('user-id', str(userid)):
+        #     found_user= self.airtable.get('user-id', str(userid))
+        #     print(found_user)
+        #     # fields = {'Skills': }
+        #     # self.airtable.update(found_user['id'], fields)
+        # else:
+        #     new_user = {'user-id': str(userid), 'Name': username, 'Skills': textresponse}
+        #     self.airtable.insert(new_user)
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel=userid,
-                                      text="Added these skills to your profile: \n" + mySkills,
+                                      text="You added skills to your profile: \n" + mySkills,
                                       # attachments=text, #messageObj.create_attachments2(text),
-                                      user=userid
+                                      username = "Skillz Bot"
+                                      # user=userid,
+                                      # as_user=True
                                     )
 
     def introduce(self, userid,textresponse,username):
@@ -173,7 +182,7 @@ class Bot(object):
                                       channel="U7YPRCW1K",
                                       text=textresponse,
                                       # attachments=text, #messageObj.create_attachments2(text),
-                                      user='userid'
+                                      username='Feedback Bot'
                                     )
 
     def copycat(self, slackevent):
