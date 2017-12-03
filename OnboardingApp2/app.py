@@ -202,12 +202,13 @@ def feedback():
     command = request.form.get('command', None)
     text = request.form.get('text', None)
     user = request.form.get('user_id', None)
+    username = request.form.get('user_name', None)
     
     # Validate the request parameters
     if not token:  # or some other failure condition
         abort(400)
 
-    pyBot.slashFeedback(user, text)
+    pyBot.slashFeedback(user, text, username)
 
     return make_response("Slash command received", 200,)
 

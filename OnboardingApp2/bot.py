@@ -122,6 +122,7 @@ class Bot(object):
                           "chat.postMessage",
                           channel=userid,
                           text=texts,
+                          icon_emoji=":bust_in_silhouette:",
                           # attachments=text, #messageObj.create_attachments2(text),
                           username = "Profile Bot"
                           # user=userid,
@@ -164,7 +165,8 @@ class Bot(object):
                           channel=userid,
                           text="We will notify you when someone can help you with your question: \n" + text,
                           # attachments=text, #messageObj.create_attachments2(text),
-                          username = "Help Bot"
+                          username = "Help Bot",
+                          icon_emoji=":question:"
                           # user=userid,
                           # as_user=True
                         )
@@ -202,7 +204,8 @@ class Bot(object):
                                       channel=userid,
                                       text="You added skills to your profile: \n" + mySkills,
                                       # attachments=text, #messageObj.create_attachments2(text),
-                                      username = "Skillz Bot"
+                                      username = "Skillz Bot",
+                                      icon_emoji = ":muscle:"
                                       # user=userid,
                                       # as_user=True
                                     )
@@ -224,21 +227,24 @@ class Bot(object):
                                           channel="#intros",
                                           text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
                                           # attachments=text, #messageObj.create_attachments2(text),
-                                          username = "Welcome Bot"
+                                          username = "Welcome Bot",
+                                          icon_emoji = ":wave:"
                                           # user=userid,
                                           # as_user=True
                                         )
 
-    def slashFeedback(self, userid,textresponse):
+    def slashFeedback(self, userid,textresponse, username):
         print("Got here slash")
         # messageObj = message.Message()
         admin = self.open_dm('U7YPRCW1K')
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel="U7YPRCW1K",
-                                      text=textresponse,
+                                      text="<@" + str(username) + "> says: " + textresponse,
                                       # attachments=text, #messageObj.create_attachments2(text),
-                                      username='Feedback Bot'
+                                      username='Feedback Bot',
+                                      icon_emoji=':speech_balloon:'
+
                                     )
 
     def copycat(self, slackevent):
