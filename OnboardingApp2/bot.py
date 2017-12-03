@@ -98,6 +98,14 @@ class Bot(object):
         dm_id = new_dm["channel"]["id"]
         return dm_id
 
+    def getProfile(self, userid, text):
+        print("Make profile card")
+        print(userid)
+
+    def getHelp(self, userid, text):
+        print("Get help")
+
+
     def addSkill(self, userid,textresponse):
         skills = textresponse.split()
         # messageObj = message.Message()
@@ -107,7 +115,25 @@ class Bot(object):
         for skill in skills:
             #Add to airtable
             mySkills = mySkills + skill + "\n"
-            print(skill) 
+            print(skill)
+
+        if not not self.airtable.match('user-id', str(userid)):
+            found_user= self.airtable.get('user-id', str(userid))
+            print(found_user)
+            # fields = {'Skills': }
+            # self.airtable.update(found_user['id'], fields)
+        else:
+            new_user = {'user-id': str(userid), 'Name': username, 'Skills': textresponse}
+            self.airtable.insert(new_user)
+            post_message = self.client.api_call(
+                                          "chat.postMessage",
+                                          channel="#intros",
+                                          text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
+                                          # attachments=text, #messageObj.create_attachments2(text),
+                                          username = "Welcome Bot"
+                                          # user=userid,
+                                          # as_user=True
+                                        )
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel=userid,
