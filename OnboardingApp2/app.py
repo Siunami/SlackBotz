@@ -243,12 +243,13 @@ def profile():
     command = request.form.get('command', None)
     text = request.form.get('text', None)
     user = request.form.get('user_id', None)
+    username = request.form.get('user_name', None)
     
     # Validate the request parameters
     if not token:  # or some other failure condition
         abort(400)
 
-    pyBot.getProfile(user, text)
+    pyBot.getProfile(user, text, username)
 
     return make_response("Profile command received", 200,)
 

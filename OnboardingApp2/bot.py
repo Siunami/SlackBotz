@@ -98,32 +98,82 @@ class Bot(object):
         dm_id = new_dm["channel"]["id"]
         return dm_id
 
-    def getProfile(self, userid, text):
-        print("Make profile card")
-        print(userid)
+    def getProfile(self, userid, text, username):
+        member = self.airtable.match('Name', str(username))
+        print(member)
+        skills = member['fields']['Skills'].split(',')
+        aboutme = member['fields']['AboutMe']
+        kudos = member['fields']['kudos']
+        numPosts = member['fields']['num-posts']
+        badges = member['fields']['badges'].split(',')
+        mySkills = ""
+        print skills
+        for skill in skills:
+            #Add to airtable
+            mySkills = mySkills + skill + ", "
+        print badges
+        myBadges = ""
+        for badge in badges:
+            #Add to airtable
+            myBadges = myBadges + badge + ", "
+
+        texts = "Member: " + str(username) + "\n" + "Skills: " + mySkills + "\n" + "About Me: " + aboutme + "\n" + "Kudos: " + str(kudos) + "\n" + "Post Count: " + str(numPosts) + "\n" + "Badges: " + myBadges
+        post_message = self.client.api_call(
+                          "chat.postMessage",
+                          channel=userid,
+                          text=texts,
+                          # attachments=text, #messageObj.create_attachments2(text),
+                          username = "Profile Bot"
+                          # user=userid,
+                          # as_user=True
+                        )
+        # print("Make profile card")
+        # print(userid)
 
     def getHelp(self, userid, text, username):
 
         print("Get help")
-        if not not self.airtable.match('user-id', str(userid)):
-            found_user= self.airtable.match('user-id', str(userid))
-            fields = {'AboutMe': str(textresponse)}
-            self.airtable.update(found_user['id'], fields)
-        else:
-            new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
-            self.airtable.insert(new_user)
-        # post_message = self.client.api_call(
-        #                               "chat.postMessage",
-        #                               channel="#intros",
-        #                               text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
-        #                               # attachments=text, #messageObj.create_attachments2(text),
-        #                               username = "Welcome Bot"
-        #                               # user=userid,
-        #                               # as_user=True
-        #                             )
+        people = self.airtable.get_all(fields=['Name','Skills'])
+        print(people)
+        foundPerson = False
+
+        # while not foundPerson:
+        #     individual = people[0]
+        #     if not individual['fields']:
+        #         fieldKeys = individual['fields'].keys()
+        #         for key in fieldKeys:
+        #             if key == "Skills":
+        #                 skills = individual['fields']['Skills']
+        #                 # print individual
+        #                 for skill in skills:
+        #                     if skill == text:
+        #                         foundPerson = True
+        #                         mentor = individual
+        #                         print(mentor)
+        #     people.pop(0)
+        #     if len(people) == 0:
+        #         foundPerson = True
+
+        # if not not self.airtable.match('user-id', str(userid)):
+        #     found_user= self.airtable.match('user-id', str(userid))
+        #     fields = {'AboutMe': str(textresponse)}
+        #     self.airtable.update(found_user['id'], fields)
+        # else:
+        post_message = self.client.api_call(
+                          "chat.postMessage",
+                          channel=userid,
+                          text="We will notify you when someone can help you with your question: \n" + text,
+                          # attachments=text, #messageObj.create_attachments2(text),
+                          username = "Help Bot"
+                          # user=userid,
+                          # as_user=True
+                        )
+            # new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
+            # self.airtable.insert(new_user)
+
 
     def addSkill(self, userid,textresponse):
-        skills = textresponse.split()
+        skills = textresponse.split(",")
         # messageObj = message.Message()
         # admin = self.open_dm('U7YPRCW1K')
         print(userid)
@@ -132,7 +182,13 @@ class Bot(object):
             #Add to airtable
             mySkills = mySkills + skill + "\n"
             print(skill)
-
+        # TODO: Need to grab current skills and only add new skills
+        user = self.airtable.match('user-id', 'Dora')
+        temp = str([x.strip() for x in textresponse.split(',')])
+        print temp
+        skills = {'Skills': str([x.strip() for x in textresponse.split(',')])}
+        self.airtable.update(user['id'], skills)
+        print "SKILLS OBJECT: "+str(skills)
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.get('user-id', str(userid))
         #     print(found_user)
