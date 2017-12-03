@@ -7,9 +7,7 @@ import message
 
 from slackclient import SlackClient
 
-# import Airtable
-
-# airtable = Airtable.Airtable('appAUfzTdcqhV88YO', 'demo')
+import Airtable
 
 # print airtable.get_all()
 
@@ -24,6 +22,7 @@ class Bot(object):
     """ Instanciates a Bot object to handle Slack onboarding interactions."""
     def __init__(self):
         super(Bot, self).__init__()
+        self.airtable = Airtable.Airtable('appAUfzTdcqhV88YO', 'demo')
         self.name = "pythonboardingbot"
         self.emoji = ":robot_face:"
         # When we instantiate a new bot object, we can access the app
@@ -35,7 +34,7 @@ class Bot(object):
                       # scope that your app will need.
                       "scope": "bot"}
         self.verification = os.environ.get("VERIFICATION_TOKEN")
-
+        ["python"]
         # NOTE: Python-slack requires a client connection to generate
         # an oauth token. We can connect to the client without authenticating
         # by passing an empty string as a token and then reinstantiating the
@@ -121,15 +120,23 @@ class Bot(object):
         print("Got here slash")
         # messageObj = message.Message()
         # admin = self.open_dm('U7YPRCW1K')
-        post_message = self.client.api_call(
-                                      "chat.postMessage",
-                                      channel="#intros",
-                                      text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
-                                      # attachments=text, #messageObj.create_attachments2(text),
-                                      username = "Welcome Bot"
-                                      # user=userid,
-                                      # as_user=True
-                                    )
+        print(userid)
+        if not not self.airtable.match('user-id', str(userid)):
+            found_user= self.airtable.match('user-id', str(userid))
+            fields = {'AboutMe': str(textresponse)}
+            self.airtable.update(found_user['id'], fields)
+        else:
+            new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
+            self.airtable.insert(new_user)
+            post_message = self.client.api_call(
+                                          "chat.postMessage",
+                                          channel="#intros",
+                                          text="<@" + username + "> introduced themself. Welcome them to the community! \n" + textresponse,
+                                          # attachments=text, #messageObj.create_attachments2(text),
+                                          username = "Welcome Bot"
+                                          # user=userid,
+                                          # as_user=True
+                                        )
 
     def slashFeedback(self, userid,textresponse):
         print("Got here slash")

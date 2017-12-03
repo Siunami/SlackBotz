@@ -9,22 +9,19 @@ airtable = Airtable.Airtable('appAUfzTdcqhV88YO', 'demo')
 def find_user(id):
     response = airtable.match('user-id', id)
     if not response:
-        print "User not found"
         return False
     else:
-        print "USER FOUND!!!!!"
         return True
 
 
 def main():
-    dummy = {'user-id': 'Banana'}
-    # if slack user's id is already in airtable
-    if find_user('Mikeyboy'):
-        found_user=airtable.match('user-id', 'Mikeyboy')
-        print str(found_user)
+    if not not airtable.match('user-id', 'U7YPRCW1K'):
+        found_user=airtable.match('user-id', 'U7YPRCW1K')
+        fields = {'AboutMe': "Update intro"}
+        airtable.update(found_user['id'], fields)
         # ^ make this more efficient, don't make it compute above line twice?
     else:
-        new_user = {'user-id': 'Mikeyboy', 'Name': 'Jones', 'Notes': 'Likes tunnels'}
+        new_user = {'user-id': 'U7YPRCW1K', 'Name': "Matt", 'AboutMe': "My intro"}
         airtable.insert(new_user)
 
 
