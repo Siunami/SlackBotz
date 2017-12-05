@@ -38,7 +38,7 @@ def _event_handler(event_type, slack_event):
 
     """
     team_id = slack_event["team_id"]
-
+    print(slack_event)
     # Sends the onboarding message
     # if event_type == "message":
     #     # print("got an event")
@@ -72,10 +72,8 @@ def _event_handler(event_type, slack_event):
 
     elif event_type == "message" and slack_event["event"]["text"] == "join":
         # print("got an event")
-        print(slack_event['event']['text'])
         # pyBot.copycat(slack_event)
         user_id = slack_event["event"]["user"]
-        print("userid: " + user_id)
         # Send the onboarding message
         pyBot.onboarding_message(team_id, user_id)
         # pyBot.update_share(team_id, user_id)

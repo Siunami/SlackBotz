@@ -107,7 +107,7 @@ class Bot(object):
             post_message = self.client.api_call(
                               "chat.postMessage",
                               channel=userid,
-                              text="Sorry we couldn't find a user with that name. Try /search [skill] to find others",
+                              text="Sorry we couldn't find a user with that name. Try /search [skill] to find other people by experience",
                               # attachments=attach,
                               icon_emoji=":bust_in_silhouette:",
                               # attachments=text, #messageObj.create_attachments2(text),
@@ -214,6 +214,14 @@ class Bot(object):
         # Yes answer starts a dm with the question asker.
 
 
+        for x in range(0,len(people)):
+            individual = people[x]
+            if individual['fields']:
+                if "Skills" in individual['fields'].keys():
+                    print("has fields")
+                    print(individual['fields']['Name'])
+                    print(individual['fields'])
+
         # while not foundPerson:
         #     individual = people[0]
         #     if not individual['fields']:
@@ -253,44 +261,44 @@ class Bot(object):
     def updateSkill(self, userid,textresponse):
         skills = textresponse.split(",")
         print(textresponse)
-        # messageObj = message.Message()
+        newSkill = []
+        for item in skills:
+            newSkill.append(item.strip().lower())
+        print("new Skills")
+        print(newSkill)
         # admin = self.open_dm('U7YPRCW1K')
         # print(userid)
+        # mySkills is printed to console.
         mySkills = ""
-        updateSkills = ""
         for x in range(0,len(skills)):
-            if x == len(skills) - 1:
-                updateSkills = updateSkills + skills[x].strip().lower()
-            else:
-                updateSkills = updateSkills + skills[x].strip().lower() + ","
-            mySkills = mySkills + "+ " + skills[x].strip().lower() + "\n"
+            mySkills = mySkills + "+ " + newSkill[x] + "\n"
         # DONE: Need to grab current skills and only add new skills
         user = self.airtable.match('user-id', str(userid))
-        skillList = ""
-        newSkills = updateSkills.split(",")
-        # TODO: Only get fields skills if it exists.
-        # Otherwise error will occur
-        # if not currentSkills['fields']:
-        currentSkills = user['fields']['Skills'].split(",")
-        # DONE only add new skills that are not current skills
-        # for nskill in newSkills:
-        newSkill = updateSkills.split(",")
-        for nskill in newSkill:
-            if nskill not in currentSkills:
-                currentSkills.append(nskill)
+        # Only get skill field if it exists
+        if "fields" in user.keys():
+            if "Skills" in user['fields'].keys():
+                currentSkills = user['fields']['Skills'].split(",")
+                # Add new skills not in current
+                for nskill in newSkill:
+                    if nskill not in currentSkills:
+                        print(nskill)
+                        currentSkills.append(nskill)
 
-        allSkills = ''
-        for x in range(0,len(currentSkills)):
-                    #Add to airtable
-                    if x == len(currentSkills) - 1:
-                        allSkills = allSkills + currentSkills[x].strip().lower()
-                    else:
-                        allSkills = allSkills + currentSkills[x].strip().lower() + ","
-        # temp = str([x.strip() for x in textresponse.split(',')])
-        print(allSkills)
-        skills = { 'Skills':allSkills }
-        self.airtable.update(user['id'], skills)
-        print "SKILLS OBJECT: " + str(skills)
+                # allSkills is added to database
+                allSkills = ''
+                for x in range(0,len(currentSkills)):
+                            #Add to airtable
+                            if x == len(currentSkills) - 1:
+                                allSkills = allSkills + currentSkills[x]
+                            else:
+                                allSkills = allSkills + currentSkills[x] + ","
+                print(allSkills)
+                skills = { 'Skills':allSkills }
+                self.airtable.update(user['id'], skills)
+                print "SKILLS OBJECT: " + str(skills)
+            else:
+                skills = { 'Skills':newSkill }
+                self.airtable.update(user['id'], skills)
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.get('user-id', str(userid))
         #     print(found_user)
@@ -311,11 +319,51 @@ class Bot(object):
                                     )
 
     def removeskill(self, userid,textresponse):
+        skills = textresponse.split(",")
+        print(textresponse)
+        removeSkills = []
+        for item in skills:
+            removeSkills.append(item.strip().lower())
+        # admin = self.open_dm('U7YPRCW1K')
+        # print(userid)
+        # mySkills is printed to console.
+        # DONE: Need to grab current skills and only add new skills
+        user = self.airtable.match('user-id', str(userid))
+        # Only get skill field if it exists
+        if "fields" in user.keys():
+            if "Skills" in user['fields'].keys():
+                currentSkills = user['fields']['Skills'].split(",")
+                removedSkills = []
+                # Add new skills not in current
+                for nskill in removeSkills:
+                    if nskill in currentSkills:
+                        currentSkills.remove(nskill)
+                        removedSkills.append(nskill)
+
+                mySkills = ""
+                for x in range(0,len(removedSkills)):
+                    mySkills = mySkills + "- " + removedSkills[x] + "\n"
+
+                # allSkills is added to database
+                allSkills = ''
+                for x in range(0,len(currentSkills)):
+                            #Add to airtable
+                            if x == len(currentSkills) - 1:
+                                allSkills = allSkills + currentSkills[x]
+                            else:
+                                allSkills = allSkills + currentSkills[x] + ","
+                print(allSkills)
+                skills = { 'Skills':allSkills }
+                self.airtable.update(user['id'], skills)
+                print "SKILLS OBJECT: " + str(skills)
+            else:
+                skills = { 'Skills':newSkill }
+                self.airtable.update(user['id'], skills)
         #TODO very similar to updateskill. Refactor updateskill first
         post_message = self.client.api_call(
                               "chat.postMessage",
                               channel=userid,
-                              text="You removed skills to your profile: \n" + mySkills,
+                              text="You removed skills from your profile: \n" + mySkills,
                               # attachments=text, #messageObj.create_attachments2(text),
                               username = "Skillz Bot",
                               icon_emoji = ":muscle:"
@@ -428,9 +476,13 @@ class Bot(object):
         message_obj.create_attachments()
         # TODO: On creation of new member, create a profile for them with default values
         # Then in onboarding. Tell them to do /profile and update anything they want anytime
-
+        # TODO: Set name here?
+        skills = { "AboutMe": "Hi everyone!","kudos":0,"num-posts":0,"badges": "newUser" }
+        self.airtable.insert({ "user-id":user_id })
+        new_user = self.airtable.match('user-id', str(user_id))
+        self.airtable.update(new_user['id'], skills)
         post_message = self.client.api_call("chat.postMessage",
-                                            channel=message_obj.channel,
+                                            channel=user_id,
                                             username=self.name,
                                             icon_emoji=self.emoji,
                                             text=message_obj.text,
