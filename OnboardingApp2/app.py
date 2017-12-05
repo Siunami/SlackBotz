@@ -13,6 +13,12 @@ slack = pyBot.client
 app = Flask(__name__)
 
 
+
+# slack_event
+# {"token":"Zq0U2r2vAJQs0zpClnDXJlm2","team_id":"T7Y4C4BUH","api_app_id":"A84259P17","event":
+# {"type":"message","user":"U7YPRCW1K","text":"join","ts":"1512467193.000101","channel":"D84U86BK4",
+# "event_ts":"1512467193.000101"},"type":"event_callback","event_id":"Ev89P9K126","event_time":1512467193,
+# "authed_users":["U84D2NURF"]}
 def _event_handler(event_type, slack_event):
     """
     A helper function that routes events from Slack to our Bot
@@ -191,6 +197,28 @@ def hears():
 #   response_url=https://hooks.slack.com/commands/1234/5678
 
 
+@app.route("/find", methods=["GET", "POST"])
+def find():
+    """Parse the command parameters, validate them, and respond.
+    Note: This URL must support HTTPS and serve a valid SSL certificate.
+    """
+    # Parse the parameters you need
+    token = request.form.get('token', None)
+    #TODO: validate the token
+    command = request.form.get('command', None)
+    text = request.form.get('text', None)
+    user = request.form.get('user_id', None)
+    username = request.form.get('user_name', None)
+    
+    # Validate the request parameters
+    if not token:  # or some other failure condition
+        abort(400)
+
+    pyBot.find(user, text, username)
+
+    return make_response("Slash command received", 200,)
+
+
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
     """Parse the command parameters, validate them, and respond.
@@ -299,6 +327,26 @@ def skill():
         abort(400)
 
     pyBot.updateSkill(user, text)
+
+    return make_response("Slash command received", 200,)
+
+@app.route("/removeskill", methods=["GET", "POST"])
+def remove():
+    """Parse the command parameters, validate them, and respond.
+    Note: This URL must support HTTPS and serve a valid SSL certificate.
+    """
+    # print(request.form)
+    # Parse the parameters you need
+    token = request.form.get('token', None)
+    #TODO: validate the token
+    command = request.form.get('command', None)
+    text = request.form.get('text', None)
+    user = request.form.get('user_id', None)
+    # Validate the request parameters
+    if not token:  # or some other failure condition
+        abort(400)
+
+    pyBot.removeskill(user, text)
 
     return make_response("Slash command received", 200,)
 

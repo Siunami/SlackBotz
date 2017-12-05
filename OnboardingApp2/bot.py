@@ -107,7 +107,7 @@ class Bot(object):
             post_message = self.client.api_call(
                               "chat.postMessage",
                               channel=userid,
-                              text="Sorry we couldn't find a user with that name. Try /listmembers to find a current member's name",
+                              text="Sorry we couldn't find a user with that name. Try /search [skill] to find others",
                               # attachments=attach,
                               icon_emoji=":bust_in_silhouette:",
                               # attachments=text, #messageObj.create_attachments2(text),
@@ -177,12 +177,42 @@ class Bot(object):
         # print("Make profile card")
         # print(userid)
 
+
+# TODO: getHelp and find both need to find a person based on a given skill
+# get_all fields Skills and Name. Any name that is successful is added to list
+# anyone in list is potential for member = self.airtable.match('Name', str(text))
+
+    def find(self, userid,textresponse, username):
+        people = self.airtable.get_all(fields=['Name','Skills'])
+        post_message = self.client.api_call(
+                                      "chat.postMessage",
+                                      channel="U7YPRCW1K",
+                                      text="<@" + str(username) + "> says: " + textresponse,
+                                      # attachments=text, #messageObj.create_attachments2(text),
+                                      username='Feedback Bot',
+                                      icon_emoji=':speech_balloon:'
+                                    )
+
+# people = self.airtable.get_all(fields=['Name','Skills'])
+# [{u'createdTime': u'2017-12-03T01:09:36.000Z', u'fields': {u'Skills': u'python,skills,java,webdevelopment',
+#  u'Name': u'siunami.matt'}, u'id': u'rec1DJ7xxNBUkJodG'}, {u'createdTime': u'2017-12-03T01:40:57.000Z', u'fields': 
+#  {u'Skills': u'python, javascript, java', u'Name': u'luce'}, u'id': u'recBGkY4xEP4vfdzl'}, 
+#  {u'createdTime': u'2017-12-03T01:41:04.000Z', u'fields': {u'Name': u'Default'}, u'id': u'recJgF2UK061rLLgC'}, 
+#  {u'createdTime': u'2017-12-04T09:18:56.000Z', u'fields': {}, u'id': u'recewChBuqCi9Lb2q'}]
+
     def getHelp(self, userid, text, username):
 
         print("Get help")
         people = self.airtable.get_all(fields=['Name','Skills'])
         print(people)
         foundPerson = False
+
+        # Start at a random spot in the list.
+        # First search for person with all skills tagged in question
+        # Then with all skills - 1, etc.
+        # On match, send dm to person with question in attachment. Yes/No
+        # Yes answer starts a dm with the question asker.
+
 
         # while not foundPerson:
         #     individual = people[0]
@@ -229,17 +259,11 @@ class Bot(object):
         mySkills = ""
         updateSkills = ""
         for x in range(0,len(skills)):
-            #Add to airtable
             if x == len(skills) - 1:
                 updateSkills = updateSkills + skills[x].strip().lower()
             else:
                 updateSkills = updateSkills + skills[x].strip().lower() + ","
-            mySkills = mySkills + "- " + skills[x].strip().lower() + "\n"
-        # for x in range(0,len(skills)):
-        #     if x == len(skills):
-        #         updateSkills = updateSkills + skills[x]
-        #     else:
-        #         updateSkills = updateSkills + skills[x] + ","
+            mySkills = mySkills + "+ " + skills[x].strip().lower() + "\n"
         # DONE: Need to grab current skills and only add new skills
         user = self.airtable.match('user-id', str(userid))
         skillList = ""
@@ -253,9 +277,6 @@ class Bot(object):
         newSkill = updateSkills.split(",")
         for nskill in newSkill:
             if nskill not in currentSkills:
-                print('in if')
-                print(currentSkills)
-                print(nskill)
                 currentSkills.append(nskill)
 
         allSkills = ''
@@ -289,6 +310,19 @@ class Bot(object):
                                       # as_user=True
                                     )
 
+    def removeskill(self, userid,textresponse):
+        #TODO very similar to updateskill. Refactor updateskill first
+        post_message = self.client.api_call(
+                              "chat.postMessage",
+                              channel=userid,
+                              text="You removed skills to your profile: \n" + mySkills,
+                              # attachments=text, #messageObj.create_attachments2(text),
+                              username = "Skillz Bot",
+                              icon_emoji = ":muscle:"
+                              # user=userid,
+                              # as_user=True
+                            )
+
     def about(self, userid,textresponse,username):
         print("Got here slash")
         # messageObj = message.Message()
@@ -298,6 +332,16 @@ class Bot(object):
             found_user= self.airtable.match('user-id', str(userid))
             fields = {'AboutMe': textresponse}
             self.airtable.update(found_user['id'], fields)
+            post_message = self.client.api_call(
+                              "chat.postMessage",
+                              channel=userid,
+                              text="Successfully updated about me.",
+                              # attachments=text, #messageObj.create_attachments2(text),
+                              username = "Welcome Bot",
+                              icon_emoji = ":wave:"
+                              # user=userid,
+                              # as_user=True
+                            )
         else:
             new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
             self.airtable.insert(new_user)
@@ -326,6 +370,7 @@ class Bot(object):
 
                                     )
 
+
     def copycat(self, slackevent):
     # def copycat(self, team_id, user_id, slackevent):
         # message_obj = self.messages[team_id][user_id]
@@ -338,6 +383,8 @@ class Bot(object):
                                       text='hello from bot! Matthew sent a message: ' + str(slackevent['event']['text']),
                                       user=str(slackevent['event']['user'])
                                     )
+
+
 
     def onboarding_message(self, team_id, user_id):
         """
