@@ -15,8 +15,8 @@ class Message(object):
         super(Message, self).__init__()
         self.channel = ""
         self.timestamp = ""
-        self.text = ("Welcome to Slack! We're so glad you're here. "
-                     "\nGet started by completing the steps below.")
+        self.text = ("Welcome to ___! We're so glad you're here. "
+                     "\nGet started by completing the steps below in order.")
         self.emoji_attachment = {}
         self.pin_attachment = {}
         self.share_attachment = {}

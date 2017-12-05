@@ -99,35 +99,81 @@ class Bot(object):
         return dm_id
 
     def getProfile(self, userid, text, username):
-        member = self.airtable.match('Name', str(username))
+        ## TODO: Currently searching by non-unique name.
+        ## Need to use unique value
+        member = self.airtable.match('Name', str(text))
         print(member)
-        skills = member['fields']['Skills'].split(',')
-        aboutme = member['fields']['AboutMe']
-        kudos = member['fields']['kudos']
-        numPosts = member['fields']['num-posts']
-        badges = member['fields']['badges'].split(',')
-        mySkills = ""
-        print skills
-        for skill in skills:
-            #Add to airtable
-            mySkills = mySkills + skill + ", "
-        print badges
-        myBadges = ""
-        for badge in badges:
-            #Add to airtable
-            myBadges = myBadges + badge + ", "
+        if not member:
+            post_message = self.client.api_call(
+                              "chat.postMessage",
+                              channel=userid,
+                              text="Sorry we couldn't find a user with that name. Try /listmembers to find a current member's name",
+                              # attachments=attach,
+                              icon_emoji=":bust_in_silhouette:",
+                              # attachments=text, #messageObj.create_attachments2(text),
+                              username = "Profile Bot"
+                              # user=userid,
+                              # as_user=True
+                            )
+        else:
+            user = member['fields']['Name']
+            skills = member['fields']['Skills'].split(',')
+            aboutme = member['fields']['AboutMe']
+            kudos = member['fields']['kudos']
+            numPosts = member['fields']['num-posts']
+            badges = member['fields']['badges'].split(',')
+            mySkills = ""
+            print skills
+            for x in range(0,len(skills)):
+                if x == len(skills)-1:
+                    mySkills = mySkills + skills[x]
+                else:
+                    mySkills = mySkills + skills[x] + ", "
+            print badges
+            myBadges = ""
+            for badge in badges:
+                myBadges = myBadges + badge + ", "
 
-        texts = "Member: " + str(username) + "\n" + "Skills: " + mySkills + "\n" + "About Me: " + aboutme + "\n" + "Kudos: " + str(kudos) + "\n" + "Post Count: " + str(numPosts) + "\n" + "Badges: " + myBadges
-        post_message = self.client.api_call(
-                          "chat.postMessage",
-                          channel=userid,
-                          text=texts,
-                          icon_emoji=":bust_in_silhouette:",
-                          # attachments=text, #messageObj.create_attachments2(text),
-                          username = "Profile Bot"
-                          # user=userid,
-                          # as_user=True
-                        )
+            # texts = "Member: <@" + str(username) + ">\n" + "Skills: " + mySkills + "\n" + "About Me: " + aboutme + "\n" + "Kudos: " + str(kudos) + "\n" + "Post Count: " + str(numPosts) + "\n" + "Badges: " + myBadges
+            attach = [{
+                        # "fallback": "ReferenceError - UI is not defined: https://honeybadger.io/path/to/event/",
+                        "text": "<@" + user + "> " + "Score " + str(kudos),
+                        "fields": [
+                            {
+                                "title": "Skills",
+                                "value": mySkills,
+                                "short": True
+                            },
+                            {
+                                "title": "Posts",
+                                "value": numPosts,
+                                "short": True
+                            },
+                            {
+                                "title": "About",
+                                "value": aboutme
+                                # "short": True
+                            },
+                            {
+                                "title": "Badges",
+                                # "value": badges
+                                "value": "Shows 5 most recent badges. Click to show more"
+                                # "short": True
+                            }
+                        ],
+                        "color": "#F35A00"
+                    }]
+            post_message = self.client.api_call(
+                              "chat.postMessage",
+                              channel=userid,
+                              # text=texts,
+                              attachments=attach,
+                              icon_emoji=":bust_in_silhouette:",
+                              # attachments=text, #messageObj.create_attachments2(text),
+                              username = "Profile Bot"
+                              # user=userid,
+                              # as_user=True
+                            )
         # print("Make profile card")
         # print(userid)
 
@@ -174,23 +220,56 @@ class Bot(object):
             # self.airtable.insert(new_user)
 
 
-    def addSkill(self, userid,textresponse):
+    def updateSkill(self, userid,textresponse):
         skills = textresponse.split(",")
+        print(textresponse)
         # messageObj = message.Message()
         # admin = self.open_dm('U7YPRCW1K')
-        print(userid)
+        # print(userid)
         mySkills = ""
-        for skill in skills:
+        updateSkills = ""
+        for x in range(0,len(skills)):
             #Add to airtable
-            mySkills = mySkills + skill + "\n"
-            print(skill)
-        # TODO: Need to grab current skills and only add new skills
-        user = self.airtable.match('user-id', 'Dora')
-        temp = str([x.strip() for x in textresponse.split(',')])
-        print temp
-        skills = {'Skills': str([x.strip() for x in textresponse.split(',')])}
+            if x == len(skills) - 1:
+                updateSkills = updateSkills + skills[x].strip().lower()
+            else:
+                updateSkills = updateSkills + skills[x].strip().lower() + ","
+            mySkills = mySkills + "- " + skills[x].strip().lower() + "\n"
+        # for x in range(0,len(skills)):
+        #     if x == len(skills):
+        #         updateSkills = updateSkills + skills[x]
+        #     else:
+        #         updateSkills = updateSkills + skills[x] + ","
+        # DONE: Need to grab current skills and only add new skills
+        user = self.airtable.match('user-id', str(userid))
+        skillList = ""
+        newSkills = updateSkills.split(",")
+        # TODO: Only get fields skills if it exists.
+        # Otherwise error will occur
+        # if not currentSkills['fields']:
+        currentSkills = user['fields']['Skills'].split(",")
+        # DONE only add new skills that are not current skills
+        # for nskill in newSkills:
+        newSkill = updateSkills.split(",")
+        for nskill in newSkill:
+            if nskill not in currentSkills:
+                print('in if')
+                print(currentSkills)
+                print(nskill)
+                currentSkills.append(nskill)
+
+        allSkills = ''
+        for x in range(0,len(currentSkills)):
+                    #Add to airtable
+                    if x == len(currentSkills) - 1:
+                        allSkills = allSkills + currentSkills[x].strip().lower()
+                    else:
+                        allSkills = allSkills + currentSkills[x].strip().lower() + ","
+        # temp = str([x.strip() for x in textresponse.split(',')])
+        print(allSkills)
+        skills = { 'Skills':allSkills }
         self.airtable.update(user['id'], skills)
-        print "SKILLS OBJECT: "+str(skills)
+        print "SKILLS OBJECT: " + str(skills)
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.get('user-id', str(userid))
         #     print(found_user)
@@ -210,14 +289,14 @@ class Bot(object):
                                       # as_user=True
                                     )
 
-    def introduce(self, userid,textresponse,username):
+    def about(self, userid,textresponse,username):
         print("Got here slash")
         # messageObj = message.Message()
         # admin = self.open_dm('U7YPRCW1K')
         print(userid)
         if not not self.airtable.match('user-id', str(userid)):
             found_user= self.airtable.match('user-id', str(userid))
-            fields = {'AboutMe': str(textresponse)}
+            fields = {'AboutMe': textresponse}
             self.airtable.update(found_user['id'], fields)
         else:
             new_user = {'user-id': str(userid), 'Name': username, 'AboutMe': textresponse}
@@ -300,6 +379,9 @@ class Bot(object):
         # the attachments on the message object which we're accessing in the
         # API call below through the message object's `attachments` attribute.
         message_obj.create_attachments()
+        # TODO: On creation of new member, create a profile for them with default values
+        # Then in onboarding. Tell them to do /profile and update anything they want anytime
+
         post_message = self.client.api_call("chat.postMessage",
                                             channel=message_obj.channel,
                                             username=self.name,

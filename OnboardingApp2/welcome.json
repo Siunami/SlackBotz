@@ -1,24 +1,24 @@
 {
     "attachments": [{
         "mrkdwn_in": ["text"],
-        "author_name": "Introduce yourself!",
-        "text": ":white_large_square: *Tell us about yourself* :wave:",
+        "author_name": "Meet the community",
+        "text": ":white_large_square: *Check out your profile* :bust_in_silhouette:",
         "fields": [{
-            "value": "Introduce yourself using /aboutme ... command"
+            "value": "Try /profile [membername]. Find other member's names with /listprofiles"
         }]
     }, {
         "mrkdwn_in": ["text"],
-        "author_name": "Tell us about your experience",
-        "text": ":white_large_square: *Add a skill* :notebook_with_decorative_cover:",
+        "author_name": "We want to get to know you!",
+        "text": ":white_large_square: *Tell us about yourself* :notebook_with_decorative_cover:",
         "fields": [{
-            "value": "Add your skills to your profile using /addskill ..."
+            "value": "Update your information with /update[part of profile]"
         }]
     }, {
         "mrkdwn_in": ["text"],
-        "author_name": "Get to know our community",
+        "author_name": "Become a part of the community.",
         "text": ":white_large_square: *Join a topic channel* :notebook_with_decorative_cover:",
         "fields": [{
-            "value": "Description here"
+            "value": "Take a look at some of the topic channels"
         }]
     }]
 }
