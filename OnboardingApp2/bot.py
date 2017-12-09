@@ -124,7 +124,7 @@ class Bot(object):
                             )
         else:
             user = member['fields']['Name']
-            if "Interests" == member['fields'].keys():
+            if "Interests" in member['fields'].keys():
                 if member['fields']['Interests'] == "":
                     mySkills = "none added yet"
                 else:
@@ -308,9 +308,10 @@ class Bot(object):
                                 allSkills = allSkills + currentSkills[x] + ","
                 print(allSkills)
                 skills = { 'Interests':allSkills }
-                # self.airtable.update(user['id'], skills)
+                self.airtable.update(user['id'], skills)
                 print "SKILLS OBJECT: " + str(skills)
             else:
+                print("First update of skills")
                 allSkills = ''
                 for x in range(0,len(newSkill)):
                             #Add to airtable
@@ -319,7 +320,7 @@ class Bot(object):
                             else:
                                 allSkills = allSkills + newSkill[x] + ","
                 skills = { 'Interests':allSkills }
-                # self.airtable.update(user['id'], skills)
+                self.airtable.update(user['id'], skills)
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.get('user-id', str(userid))
         #     print(found_user)
@@ -449,11 +450,11 @@ class Bot(object):
         # user = self.open_dm(slackevent['event']['user'])
         # print(slackevent['event']['user'])
         # print("Got here")
-        # user_list = self.client.api_call(
-        #                               "users.list",
-        #                               token=os.environ.get("VERIFICATION_TOKEN")
-        #                             )
-        # print(user_list)
+        user_list = self.client.api_call(
+                                      "users.list",
+                                      token=os.environ.get("VERIFICATION_TOKEN")
+                                    )
+        print(user_list)
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel='#intros',
@@ -513,10 +514,10 @@ class Bot(object):
 
         for member in user_list['members']:
             if member['id'] == user_id:
-                if member['profile']['display_name'] != '':
-                    name = member['profile']['display_name']
-                else:
-                    name = member['real_name']
+                # if member['profile']['display_name'] != '':
+                #     name = member['profile']['display_name']
+                # else:
+                name = member['name']
                 email = member['profile']['email']
         # print("GET PROFILE")
         # print(get_user)
