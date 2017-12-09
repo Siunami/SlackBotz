@@ -95,10 +95,17 @@ def _event_handler(event_type, slack_event):
 
     # ============= Reaction Added Events ============= #
     # If the user has added an emoji reaction to the onboarding message
+    # elif event_type == "reaction_added":
+    #     user_id = slack_event["event"]["user"]
+    #     # Update the onboarding message
+    #     pyBot.update_emoji(team_id, user_id)
+    #     return make_response("Welcome message updates with reactji", 200,)
+
     elif event_type == "reaction_added":
         user_id = slack_event["event"]["user"]
         # Update the onboarding message
-        pyBot.update_emoji(team_id, user_id)
+        print("REACTION")
+        # pyBot.update_emoji(team_id, user_id)
         return make_response("Welcome message updates with reactji", 200,)
 
     # =============== Pin Added Events ================ #
@@ -151,6 +158,8 @@ def hears():
     handler helper function to route events to our Bot.
     """
     slack_event = json.loads(request.data)
+    # print("Pure data")
+    # print(request)
 
     # ============= Slack URL Verification ============ #
     # In order to verify the url of our endpoint, Slack will send a challenge

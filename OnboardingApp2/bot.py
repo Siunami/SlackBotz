@@ -137,7 +137,7 @@ class Bot(object):
             # texts = "Member: <@" + str(username) + ">\n" + "Skills: " + mySkills + "\n" + "About Me: " + aboutme + "\n" + "Kudos: " + str(kudos) + "\n" + "Post Count: " + str(numPosts) + "\n" + "Badges: " + myBadges
             attach = [{
                         # "fallback": "ReferenceError - UI is not defined: https://honeybadger.io/path/to/event/",
-                        "text": "<@" + user + "> " + "Score " + str(kudos),
+                        "text": "<@" + userid + "> " + "Score " + str(kudos),
                         "fields": [
                             {
                                 "title": "Skills",
@@ -203,7 +203,7 @@ class Bot(object):
     def getHelp(self, userid, text, username):
 
         print("Get help")
-        people = self.airtable.get_all(fields=['Name','Skills'])
+        people = self.airtable.get_all(fields=['user-id','Skills'])
         print(people)
         foundPerson = False
 
@@ -213,15 +213,16 @@ class Bot(object):
         # On match, send dm to person with question in attachment. Yes/No
         # Yes answer starts a dm with the question asker.
 
+        skilledPeople = []
 
         for x in range(0,len(people)):
             individual = people[x]
             if individual['fields']:
                 if "Skills" in individual['fields'].keys():
-                    print("has fields")
-                    print(individual['fields']['Name'])
-                    print(individual['fields'])
+                    skilledPeople.append(individual)
 
+        # for x in range(0,len(skilledPeople)):
+            
         # while not foundPerson:
         #     individual = people[0]
         #     if not individual['fields']:
@@ -477,6 +478,19 @@ class Bot(object):
         # TODO: On creation of new member, create a profile for them with default values
         # Then in onboarding. Tell them to do /profile and update anything they want anytime
         # TODO: Set name here?
+        # get_user = self.client.api_call(
+        #                       "users.list",
+        #                       token=self.verification,
+        #                     )
+        # print("GET PROFILE")
+        # print(get_user)
+        # get_user = self.client.api_call(
+        #                       "users.profile.get",
+        #                       token=self.verification,
+        #                       user=user_id
+        #                     )
+        # print("GET PROFILE")
+        # print(get_user)
         skills = { "AboutMe": "Hi everyone!","kudos":0,"num-posts":0,"badges": "newUser" }
         self.airtable.insert({ "user-id":user_id })
         new_user = self.airtable.match('user-id', str(user_id))
