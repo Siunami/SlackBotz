@@ -4,6 +4,8 @@ Python Slack Bot class for use with the pythOnBoarding app
 """
 import os
 import message
+import datetime
+import re
 
 from slackclient import SlackClient
 
@@ -16,6 +18,8 @@ import Airtable
 # as a global object. When your bot is out of development, it's best to
 # save this in a more persistant memory store.
 authed_teams = {}
+
+
 
 
 class Bot(object):
@@ -34,7 +38,7 @@ class Bot(object):
                       # scope that your app will need.
                       "scope": "bot"}
         self.verification = os.environ.get("VERIFICATION_TOKEN")
-        ["python"]
+        # ["python"]
         # NOTE: Python-slack requires a client connection to generate
         # an oauth token. We can connect to the client without authenticating
         # by passing an empty string as a token and then reinstantiating the
@@ -101,13 +105,16 @@ class Bot(object):
     def getProfile(self, userid, text, username):
         ## TODO: Currently searching by non-unique name.
         ## Need to use unique value
-        member = self.airtable.match('Name', str(text))
+        userText = re.sub('[@]', '', text)
+        print(text)
+        print(userText)
+        member = self.airtable.match('Name', str(userText))
         print(member)
         if not member:
             post_message = self.client.api_call(
                               "chat.postMessage",
                               channel=userid,
-                              text="Sorry we couldn't find a user with that name. Try /search [skill] to find other people by experience",
+                              text="Sorry we couldn't find a user with that name. Try /search [interest] to find other people",
                               # attachments=attach,
                               icon_emoji=":bust_in_silhouette:",
                               # attachments=text, #messageObj.create_attachments2(text),
@@ -117,19 +124,25 @@ class Bot(object):
                             )
         else:
             user = member['fields']['Name']
-            skills = member['fields']['Skills'].split(',')
+            if "Interests" == member['fields'].keys():
+                if member['fields']['Interests'] == "":
+                    mySkills = "none added yet"
+                else:
+                    skills = member['fields']['Interests'].split(',')
+                    mySkills = ""
+                    print skills
+                    for x in range(0,len(skills)):
+                        if x == len(skills)-1:
+                            mySkills = mySkills + skills[x]
+                        else:
+                            mySkills = mySkills + skills[x] + ", "
+            else:
+                mySkills = "none added yet"
             aboutme = member['fields']['AboutMe']
             kudos = member['fields']['kudos']
             numPosts = member['fields']['num-posts']
             badges = member['fields']['badges'].split(',')
-            mySkills = ""
-            print skills
-            for x in range(0,len(skills)):
-                if x == len(skills)-1:
-                    mySkills = mySkills + skills[x]
-                else:
-                    mySkills = mySkills + skills[x] + ", "
-            print badges
+            # print badges
             myBadges = ""
             for badge in badges:
                 myBadges = myBadges + badge + ", "
@@ -137,10 +150,10 @@ class Bot(object):
             # texts = "Member: <@" + str(username) + ">\n" + "Skills: " + mySkills + "\n" + "About Me: " + aboutme + "\n" + "Kudos: " + str(kudos) + "\n" + "Post Count: " + str(numPosts) + "\n" + "Badges: " + myBadges
             attach = [{
                         # "fallback": "ReferenceError - UI is not defined: https://honeybadger.io/path/to/event/",
-                        "text": "<@" + userid + "> " + "Score " + str(kudos),
+                        "text": "<@" + user + "> " + "Score " + str(kudos),
                         "fields": [
                             {
-                                "title": "Skills",
+                                "title": "Interests",
                                 "value": mySkills,
                                 "short": True
                             },
@@ -156,8 +169,8 @@ class Bot(object):
                             },
                             {
                                 "title": "Badges",
-                                # "value": badges
-                                "value": "Shows 5 most recent badges. Click to show more"
+                                "value": badges
+                                # "value": "Shows 5 most recent badges. Click to show more"
                                 # "short": True
                             }
                         ],
@@ -218,11 +231,11 @@ class Bot(object):
         for x in range(0,len(people)):
             individual = people[x]
             if individual['fields']:
-                if "Skills" in individual['fields'].keys():
+                if "Interests" in individual['fields'].keys():
                     skilledPeople.append(individual)
 
         # for x in range(0,len(skilledPeople)):
-            
+
         # while not foundPerson:
         #     individual = people[0]
         #     if not individual['fields']:
@@ -259,7 +272,7 @@ class Bot(object):
             # self.airtable.insert(new_user)
 
 
-    def updateSkill(self, userid,textresponse):
+    def updateInterest(self, userid,textresponse):
         skills = textresponse.split(",")
         print(textresponse)
         newSkill = []
@@ -277,8 +290,8 @@ class Bot(object):
         user = self.airtable.match('user-id', str(userid))
         # Only get skill field if it exists
         if "fields" in user.keys():
-            if "Skills" in user['fields'].keys():
-                currentSkills = user['fields']['Skills'].split(",")
+            if "Interests" in user['fields'].keys():
+                currentSkills = user['fields']['Interests'].split(",")
                 # Add new skills not in current
                 for nskill in newSkill:
                     if nskill not in currentSkills:
@@ -294,12 +307,19 @@ class Bot(object):
                             else:
                                 allSkills = allSkills + currentSkills[x] + ","
                 print(allSkills)
-                skills = { 'Skills':allSkills }
-                self.airtable.update(user['id'], skills)
+                skills = { 'Interests':allSkills }
+                # self.airtable.update(user['id'], skills)
                 print "SKILLS OBJECT: " + str(skills)
             else:
-                skills = { 'Skills':newSkill }
-                self.airtable.update(user['id'], skills)
+                allSkills = ''
+                for x in range(0,len(newSkill)):
+                            #Add to airtable
+                            if x == len(newSkill) - 1:
+                                allSkills = allSkills + newSkill[x]
+                            else:
+                                allSkills = allSkills + newSkill[x] + ","
+                skills = { 'Interests':allSkills }
+                # self.airtable.update(user['id'], skills)
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.get('user-id', str(userid))
         #     print(found_user)
@@ -311,15 +331,15 @@ class Bot(object):
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel=userid,
-                                      text="You added skills to your profile: \n" + mySkills,
+                                      text="You added interests to your profile: \n" + mySkills,
                                       # attachments=text, #messageObj.create_attachments2(text),
-                                      username = "Skillz Bot",
+                                      username = "Profile Bot",
                                       icon_emoji = ":muscle:"
                                       # user=userid,
                                       # as_user=True
                                     )
 
-    def removeskill(self, userid,textresponse):
+    def removeInterest(self, userid,textresponse):
         skills = textresponse.split(",")
         print(textresponse)
         removeSkills = []
@@ -332,8 +352,8 @@ class Bot(object):
         user = self.airtable.match('user-id', str(userid))
         # Only get skill field if it exists
         if "fields" in user.keys():
-            if "Skills" in user['fields'].keys():
-                currentSkills = user['fields']['Skills'].split(",")
+            if "Interests" in user['fields'].keys():
+                currentSkills = user['fields']['Interests'].split(",")
                 removedSkills = []
                 # Add new skills not in current
                 for nskill in removeSkills:
@@ -354,24 +374,26 @@ class Bot(object):
                             else:
                                 allSkills = allSkills + currentSkills[x] + ","
                 print(allSkills)
-                skills = { 'Skills':allSkills }
+                skills = { 'Interests':allSkills }
                 self.airtable.update(user['id'], skills)
                 print "SKILLS OBJECT: " + str(skills)
             else:
-                skills = { 'Skills':newSkill }
+                skills = { 'Interests':newSkill }
                 self.airtable.update(user['id'], skills)
         #TODO very similar to updateskill. Refactor updateskill first
         post_message = self.client.api_call(
                               "chat.postMessage",
                               channel=userid,
-                              text="You removed skills from your profile: \n" + mySkills,
+                              text="You removed interests from your profile: \n" + mySkills,
                               # attachments=text, #messageObj.create_attachments2(text),
-                              username = "Skillz Bot",
+                              username = "Profile Bot",
                               icon_emoji = ":muscle:"
                               # user=userid,
                               # as_user=True
                             )
 
+    # Don't do the automatic post thing for people
+    # Just let them do it themselves.
     def about(self, userid,textresponse,username):
         print("Got here slash")
         # messageObj = message.Message()
@@ -420,12 +442,18 @@ class Bot(object):
                                     )
 
 
-    def copycat(self, slackevent):
+    def copycat(self,user_id, slackevent):
     # def copycat(self, team_id, user_id, slackevent):
         # message_obj = self.messages[team_id][user_id]
-        user = self.open_dm(slackevent['event']['user'])
-        print(slackevent['event']['user'])
-        print("Got here")
+        print(slackevent['event']['text'])
+        # user = self.open_dm(slackevent['event']['user'])
+        # print(slackevent['event']['user'])
+        # print("Got here")
+        # user_list = self.client.api_call(
+        #                               "users.list",
+        #                               token=os.environ.get("VERIFICATION_TOKEN")
+        #                             )
+        # print(user_list)
         post_message = self.client.api_call(
                                       "chat.postMessage",
                                       channel='#intros',
@@ -478,10 +506,18 @@ class Bot(object):
         # TODO: On creation of new member, create a profile for them with default values
         # Then in onboarding. Tell them to do /profile and update anything they want anytime
         # TODO: Set name here?
-        # get_user = self.client.api_call(
-        #                       "users.list",
-        #                       token=self.verification,
-        #                     )
+        user_list = self.client.api_call(
+                              "users.list",
+                              token=self.verification,
+                            )
+
+        for member in user_list['members']:
+            if member['id'] == user_id:
+                if member['profile']['display_name'] != '':
+                    name = member['profile']['display_name']
+                else:
+                    name = member['real_name']
+                email = member['profile']['email']
         # print("GET PROFILE")
         # print(get_user)
         # get_user = self.client.api_call(
@@ -491,7 +527,12 @@ class Bot(object):
         #                     )
         # print("GET PROFILE")
         # print(get_user)
-        skills = { "AboutMe": "Hi everyone!","kudos":0,"num-posts":0,"badges": "newUser" }
+        print("GOT NAME")
+        print(name)
+        now = datetime.datetime.now()
+        date = str(now.month) + "/" + str(now.day) + "/" + str(now.year)
+
+        skills = {"Date Joined": date,"Name":name,"Email":email, "AboutMe": "Hi everyone!","kudos":0,"num-posts":0,"badges": "newUser" }
         self.airtable.insert({ "user-id":user_id })
         new_user = self.airtable.match('user-id', str(user_id))
         self.airtable.update(new_user['id'], skills)

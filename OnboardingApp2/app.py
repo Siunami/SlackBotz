@@ -38,7 +38,7 @@ def _event_handler(event_type, slack_event):
 
     """
     team_id = slack_event["team_id"]
-    print(slack_event)
+    # print(slack_event)
     # Sends the onboarding message
     # if event_type == "message":
     #     # print("got an event")
@@ -69,6 +69,16 @@ def _event_handler(event_type, slack_event):
             pyBot.update_share(team_id, user_id)
             return make_response("Welcome message updates with shared message",
                                  200,)
+    elif event_type == "message" and "command" in slack_event["event"]["text"]:
+            # print("got an event")
+            # pyBot.copycat(slack_event)
+            user_id = slack_event["event"]["user"]
+            # Send the onboarding message
+            pyBot.copycat(user_id, slack_event)
+            # pyBot.update_share(team_id, user_id)
+
+            # pyBot.copycat(team_id, user_id, slack_event)
+            return make_response("Recieved message", 200,)
 
     elif event_type == "message" and slack_event["event"]["text"] == "join":
         # print("got an event")
@@ -317,8 +327,8 @@ ImmutableMultiDict([('user_id', u'U7YPRCW1K'), ('response_url', u'https://hooks.
 ('team_domain', u'testytestygroup'), ('user_name', u'siunami.matt'), 
 ('channel_name', u'directmessage')])
 '''
-@app.route("/updateskill", methods=["GET", "POST"])
-def skill():
+@app.route("/updateinterests", methods=["GET", "POST"])
+def interests():
     """Parse the command parameters, validate them, and respond.
     Note: This URL must support HTTPS and serve a valid SSL certificate.
     """
@@ -333,11 +343,11 @@ def skill():
     if not token:  # or some other failure condition
         abort(400)
 
-    pyBot.updateSkill(user, text)
+    pyBot.updateInterest(user, text)
 
     return make_response("Slash command received", 200,)
 
-@app.route("/removeskill", methods=["GET", "POST"])
+@app.route("/removeinterests", methods=["GET", "POST"])
 def remove():
     """Parse the command parameters, validate them, and respond.
     Note: This URL must support HTTPS and serve a valid SSL certificate.
@@ -353,7 +363,7 @@ def remove():
     if not token:  # or some other failure condition
         abort(400)
 
-    pyBot.removeskill(user, text)
+    pyBot.removeInterest(user, text)
 
     return make_response("Slash command received", 200,)
 
