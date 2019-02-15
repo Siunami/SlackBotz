@@ -1,7 +1,7 @@
 # SlackBotz
 
 ## About
-A slack bot for facilitating team formation and introductions for a maker community at the University of British Columbia.
+A slack bot to facilitate team formation and introductions for a maker community at the University of British Columbia.
 
 Community members could
 - Make a profile with basic information, skills and number of kudos
