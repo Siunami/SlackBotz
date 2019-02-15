@@ -234,25 +234,6 @@ class Bot(object):
                 if "Interests" in individual['fields'].keys():
                     skilledPeople.append(individual)
 
-        # for x in range(0,len(skilledPeople)):
-
-        # while not foundPerson:
-        #     individual = people[0]
-        #     if not individual['fields']:
-        #         fieldKeys = individual['fields'].keys()
-        #         for key in fieldKeys:
-        #             if key == "Skills":
-        #                 skills = individual['fields']['Skills']
-        #                 # print individual
-        #                 for skill in skills:
-        #                     if skill == text:
-        #                         foundPerson = True
-        #                         mentor = individual
-        #                         print(mentor)
-        #     people.pop(0)
-        #     if len(people) == 0:
-        #         foundPerson = True
-
         # if not not self.airtable.match('user-id', str(userid)):
         #     found_user= self.airtable.match('user-id', str(userid))
         #     fields = {'AboutMe': str(textresponse)}
